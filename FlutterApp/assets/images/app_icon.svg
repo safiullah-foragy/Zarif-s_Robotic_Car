@@ -1,0 +1,54 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Circle -->
+  <circle cx="256" cy="256" r="256" fill="#1a237e"/>
+  
+  <!-- Gradient Background -->
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a237e;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0d47a1;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <circle cx="256" cy="256" r="256" fill="url(#bgGrad)"/>
+  
+  <!-- Car Body -->
+  <rect x="120" y="230" width="272" height="80" rx="12" fill="#FF5722"/>
+  
+  <!-- Car Roof -->
+  <path d="M 160 230 L 180 180 L 332 180 L 352 230 Z" fill="#D84315"/>
+  
+  <!-- Car Bottom Base -->
+  <rect x="100" y="310" width="312" height="50" rx="8" fill="#BF360C"/>
+  
+  <!-- Left Wheel -->
+  <circle cx="170" cy="360" r="35" fill="#212121"/>
+  <circle cx="170" cy="360" r="20" fill="#757575"/>
+  <circle cx="170" cy="360" r="10" fill="#424242"/>
+  
+  <!-- Right Wheel -->
+  <circle cx="342" cy="360" r="35" fill="#212121"/>
+  <circle cx="342" cy="360" r="20" fill="#757575"/>
+  <circle cx="342" cy="360" r="10" fill="#424242"/>
+  
+  <!-- Front Window -->
+  <path d="M 185 190 L 225 190 L 220 220 L 190 220 Z" fill="#64B5F6" opacity="0.8"/>
+  
+  <!-- Rear Window -->
+  <path d="M 287 190 L 327 190 L 322 220 L 292 220 Z" fill="#64B5F6" opacity="0.8"/>
+  
+  <!-- Front Light -->
+  <circle cx="395" cy="255" r="12" fill="#FFEB3B"/>
+  
+  <!-- Rear Light -->
+  <circle cx="117" cy="255" r="12" fill="#F44336"/>
+  
+  <!-- Antenna -->
+  <line x1="256" y1="180" x2="256" y2="150" stroke="#757575" stroke-width="4"/>
+  <circle cx="256" cy="145" r="6" fill="#FF9800"/>
+  
+  <!-- Side Details -->
+  <rect x="140" y="250" width="232" height="4" fill="#D84315" opacity="0.5"/>
+  
+  <!-- Text "ZC" (Zarif's Car) -->
+  <text x="256" y="280" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="white" text-anchor="middle">ZC</text>
+</svg>
