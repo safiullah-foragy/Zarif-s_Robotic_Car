@@ -1,0 +1,173 @@
+# Zarif's Robotic Car - Wiring Diagram (Text-Based)
+
+```
+                    ZARIF'S ROBOTIC CAR WIRING DIAGRAM
+                    ===================================
+
+                           +------------------+
+                           |   ESP8266 WiFi   |
+                           |     NodeMCU      |
+                           +------------------+
+                           | VIN  | GND       |
+                           +------+-----------+
+                           | TX(1)| RX(3)     |
+                           +------+-----------+
+                                |      |
+                    5V ---------|      |
+                    GND --------|      |
+                                |      |
+                          +-----+------+-----+
+                          | RX(0)    TX(1)   |
+                          |   ARDUINO UNO    |
+                          +------------------+
+                          | D12 | D11 | D10  |
+                          | D9  | D6  | D5   |
+                          | D3  | 5V  | GND  |
+                          +-----+-----+------+
+                            |     |     |  |  |  |
+                            |     |     |  |  |  |
+                            |     |     |  |  |  |
+    +--------+              |     |     |  |  |  |
+    | SERVO  |              |     |     |  |  |  |
+    | SG90   |              |     |     |  |  |  |
+    +--------+              |     |     |  |  |  |
+    |SIG|5V|G|              |     |     |  |  |  |
+     |   |  +--------------+      |     |  |  |  |
+     |   +-----5V                 |     |  |  |  |
+     +----------3                 |     |  |  |  |
+                                  |     |  |  |  |
+    +--------------+              |     |  |  |  |
+    | ULTRASONIC   |              |     |  |  |  |
+    |   HC-SR04    |              |     |  |  |  |
+    +--------------+              |     |  |  |  |
+    |VCC|TRG|ECH|G |              |     |  |  |  |
+     |   |   |   +---------------+      |  |  |  |
+     |   |   +---------------------------+  |  |  |
+     |   +-----------------------------------+  |  |
+     +----5V                                    |  |
+                                                |  |
+                                                |  |
+    +-------------------+                       |  |
+    |   L293D MOTOR     |                       |  |
+    |   DRIVER IC       |                       |  |
+    +-------------------+                       |  |
+    |  1  2  3  4  5  6  7  8 |                |  |
+    | EN1 I1 O1 G  G  O2 I2 VP|                |  |
+    +--+--+--+--+--+--+--+--+ |                |  |
+       |  |     |     |  |  |                  |  |
+      5V  +-5   |     |  +-6 |                 |  |
+              MOTOR-A     MOTOR-A              |  |
+                                               |  |
+    | 16 15 14 13 12 11 10  9 |                |  |
+    | VC I4 O4 G  G  O3 I3 EN2|                |  |
+    +--+--+--+--+--+--+--+--+                  |  |
+       |  |     |     |  |  |                  |  |
+      5V  +-10  |     | +-9  +---5V            |  |
+              MOTOR-B    MOTOR-B               |  |
+                                               |  |
+    VP(8) <--- BATTERY +7.4-12V                |  |
+    VCC(16) <--- 5V                            |  |
+    GND(4,5,12,13) <--- COMMON GROUND          |  |
+                                               |  |
+                                               |  |
+    CONNECTIONS TO ARDUINO:                    |  |
+    I1 (Pin 2)  <--------------------------------+  |
+    I2 (Pin 7)  <-----------------------------------+
+    I3 (Pin 10) <-----------------------------------+
+    I4 (Pin 15) <--------------------------------------+
+
+
+    POWER DISTRIBUTION:
+    ===================
+    
+    Battery Pack (7.4V - 12V)
+         (+) -----> L293D VP (Pin 8) -----> Motors
+         (-) -----> Common Ground
+    
+    5V Power Supply
+         (+) -----> Arduino 5V
+                -----> ESP8266 VIN
+                -----> L293D VCC (Pin 16)
+                -----> Servo 5V
+                -----> Ultrasonic VCC
+         
+         (-) -----> Common Ground (CRITICAL: Connect all grounds together)
+    
+
+    MOTOR CONNECTIONS:
+    ==================
+    
+    Left Motor (Motor A):
+        Wire 1 -> L293D Pin 3 (O1)
+        Wire 2 -> L293D Pin 6 (O2)
+    
+    Right Motor (Motor B):
+        Wire 1 -> L293D Pin 11 (O3)
+        Wire 2 -> L293D Pin 14 (O4)
+    
+    Note: If motors spin in wrong direction, swap the two wires.
+
+
+    ASSEMBLY NOTES:
+    ===============
+    
+    1. Mount ultrasonic sensor on servo horn
+    2. Position servo at front of car chassis
+    3. Mount Arduino and ESP8266 on chassis platform
+    4. Secure L293D motor driver near motors
+    5. Use battery holder underneath chassis
+    6. Keep wiring neat and secure to avoid disconnections
+    7. Test each connection before final assembly
+
+
+    PIN SUMMARY TABLE:
+    ==================
+    
+    Component          | Arduino Pin | Additional Connection
+    -------------------|-------------|----------------------
+    Motor A IN1        | 5           | L293D Pin 2
+    Motor A IN2        | 6           | L293D Pin 7
+    Motor B IN3        | 9           | L293D Pin 10
+    Motor B IN4        | 10          | L293D Pin 15
+    Ultrasonic TRIG    | 12          | HC-SR04 TRIG
+    Ultrasonic ECHO    | 11          | HC-SR04 ECHO
+    Servo Signal       | 3           | SG90 Orange Wire
+    ESP8266 TX         | 0 (RX)      | ESP8266 GPIO1
+    ESP8266 RX         | 1 (TX)      | ESP8266 GPIO3
+    
+```
+
+## Color Coding for Wires (Recommended)
+
+- **Red:** +5V Power
+- **Black:** Ground (GND)
+- **Yellow:** Signal/Data lines
+- **Orange:** Motor connections
+- **Blue:** Serial communication (TX/RX)
+- **Green:** Sensor connections
+
+## Critical Connections Checklist
+
+- [ ] All grounds connected together (Arduino, ESP8266, L293D, Battery)
+- [ ] L293D Enable pins (1 & 9) connected to 5V
+- [ ] Motor power (VP) connected to battery positive
+- [ ] ESP8266 and Arduino serial pins connected (TX to RX, RX to TX)
+- [ ] Ultrasonic sensor VCC to 5V, GND to ground
+- [ ] Servo connected to 5V, GND, and PWM signal pin
+- [ ] All 4 motor inputs connected to Arduino digital pins
+- [ ] Motors connected to L293D output pins
+
+## Power Requirements
+
+| Component | Voltage | Current |
+|-----------|---------|---------|
+| Arduino UNO | 5V | 50mA |
+| ESP8266 | 5V | 80-170mA |
+| L293D IC | 5V logic | 20mA |
+| Motors (2x) | 7.4-12V | 500mA each |
+| Servo SG90 | 5V | 100-250mA |
+| Ultrasonic | 5V | 15mA |
+
+**Total 5V Current:** ~400mA (use 1A+ power supply)
+**Total Motor Current:** ~1A (use appropriate battery)
+

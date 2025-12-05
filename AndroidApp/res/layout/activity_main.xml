@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/gradient_background"
+    android:padding="16dp"
+    tools:context=".MainActivity">
+
+    <!-- Title with Animation -->
+    <TextView
+        android:id="@+id/tvTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:text="ZARIF'S CAR"
+        android:textSize="32sp"
+        android:textStyle="bold"
+        android:textColor="#FFFFFF"
+        android:shadowColor="#000000"
+        android:shadowDx="2"
+        android:shadowDy="2"
+        android:shadowRadius="5"
+        android:fontFamily="sans-serif-black" />
+
+    <!-- Car Image with Animation -->
+    <ImageView
+        android:id="@+id/ivCar"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:layout_below="@id/tvTitle"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:src="@drawable/ic_car"
+        android:contentDescription="Car Icon" />
+
+    <!-- Status Display -->
+    <TextView
+        android:id="@+id/tvStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/ivCar"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:text="Mode: AUTO"
+        android:textSize="20sp"
+        android:textColor="#FFFFFF"
+        android:textStyle="bold"
+        android:padding="10dp"
+        android:background="@drawable/status_background" />
+
+    <!-- Mode Switch -->
+    <LinearLayout
+        android:id="@+id/modeSwitchContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tvStatus"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:background="@drawable/switch_container_background"
+        android:padding="12dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Manual Mode"
+            android:textSize="18sp"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"
+            android:layout_marginEnd="12dp" />
+
+        <Switch
+            android:id="@+id/modeSwitch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="false"
+            android:thumbTint="#4CAF50"
+            android:trackTint="#CCCCCC" />
+    </LinearLayout>
+
+    <!-- Timer Display -->
+    <TextView
+        android:id="@+id/tvTimer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/modeSwitchContainer"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp"
+        android:text="Time remaining: 5:00"
+        android:textSize="16sp"
+        android:textColor="#FFEB3B"
+        android:textStyle="bold"
+        android:visibility="gone" />
+
+    <!-- Manual Control Panel -->
+    <RelativeLayout
+        android:id="@+id/manualControlPanel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tvTimer"
+        android:layout_marginTop="30dp"
+        android:visibility="gone">
+
+        <!-- Forward Button -->
+        <Button
+            android:id="@+id/btnForward"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_centerHorizontal="true"
+            android:text="↑\nFORWARD"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="#FFFFFF"
+            android:background="@drawable/button_forward"
+            android:elevation="8dp" />
+
+        <!-- Left and Right Buttons -->
+        <LinearLayout
+            android:id="@+id/leftRightContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/btnForward"
+            android:layout_marginTop="20dp"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <Button
+                android:id="@+id/btnLeft"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:layout_marginEnd="50dp"
+                android:text="←\nLEFT"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="#FFFFFF"
+                android:background="@drawable/button_left"
+                android:elevation="8dp" />
+
+            <Button
+                android:id="@+id/btnRight"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:text="→\nRIGHT"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="#FFFFFF"
+                android:background="@drawable/button_right"
+                android:elevation="8dp" />
+        </LinearLayout>
+
+        <!-- Backward Button -->
+        <Button
+            android:id="@+id/btnBackward"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_below="@id/leftRightContainer"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="20dp"
+            android:text="↓\nBACKWARD"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="#FFFFFF"
+            android:background="@drawable/button_backward"
+            android:elevation="8dp" />
+    </RelativeLayout>
+
+    <!-- Connection Info -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="10dp"
+        android:text="WiFi: Zarifs Car | Pass: 12344321"
+        android:textSize="12sp"
+        android:textColor="#FFFFFF"
+        android:alpha="0.7" />
+
+</RelativeLayout>

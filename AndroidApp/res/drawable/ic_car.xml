@@ -1,0 +1,73 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="120dp"
+    android:height="120dp"
+    android:viewportWidth="120"
+    android:viewportHeight="120">
+    
+    <!-- Car Body -->
+    <path
+        android:fillColor="#FF5722"
+        android:pathData="M30,50 L90,50 L85,40 L75,30 L45,30 L35,40 Z"/>
+    
+    <!-- Car Roof -->
+    <path
+        android:fillColor="#D84315"
+        android:pathData="M40,30 L80,30 L75,20 L45,20 Z"/>
+    
+    <!-- Car Bottom -->
+    <path
+        android:fillColor="#BF360C"
+        android:pathData="M25,50 L95,50 L95,70 L25,70 Z"/>
+    
+    <!-- Left Wheel -->
+    <circle
+        android:fillColor="#212121"
+        android:cx="35"
+        android:cy="70"
+        android:r="8"/>
+    
+    <!-- Right Wheel -->
+    <circle
+        android:fillColor="#212121"
+        android:cx="85"
+        android:cy="70"
+        android:r="8"/>
+    
+    <!-- Left Wheel Hub -->
+    <circle
+        android:fillColor="#757575"
+        android:cx="35"
+        android:cy="70"
+        android:r="4"/>
+    
+    <!-- Right Wheel Hub -->
+    <circle
+        android:fillColor="#757575"
+        android:cx="85"
+        android:cy="70"
+        android:r="4"/>
+    
+    <!-- Front Window -->
+    <path
+        android:fillColor="#64B5F6"
+        android:pathData="M42,25 L55,25 L52,32 L45,32 Z"/>
+    
+    <!-- Rear Window -->
+    <path
+        android:fillColor="#64B5F6"
+        android:pathData="M65,25 L78,25 L75,32 L68,32 Z"/>
+    
+    <!-- Front Light -->
+    <circle
+        android:fillColor="#FFEB3B"
+        android:cx="92"
+        android:cy="55"
+        android:r="3"/>
+    
+    <!-- Rear Light -->
+    <circle
+        android:fillColor="#F44336"
+        android:cx="28"
+        android:cy="55"
+        android:r="3"/>
+</vector>
