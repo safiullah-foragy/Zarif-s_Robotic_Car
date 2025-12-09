@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Zarif's Robotic Car Control</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: white;
+        }
+
+        .container {
+            max-width: 500px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 28px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .subtitle {
+            text-align: center;
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 30px;
+        }
+
+        .connection-info {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .connection-info strong {
+            display: block;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .status-card {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ef4444;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.connected {
+            background: #10b981;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .mode-switch {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .mode-btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .mode-btn.active {
+            background: white;
+            color: #667eea;
+            box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 100px);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .control-btn {
+            border: none;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.25);
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            touch-action: none;
+            user-select: none;
+        }
+
+        .control-btn:active {
+            background: rgba(255, 255, 255, 0.4);
+            transform: scale(0.95);
+        }
+
+        .control-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .control-btn.forward {
+            grid-column: 2;
+            grid-row: 1;
+        }
+
+        .control-btn.left {
+            grid-column: 1;
+            grid-row: 2;
+        }
+
+        .control-btn.stop {
+            grid-column: 2;
+            grid-row: 2;
+            background: rgba(239, 68, 68, 0.3);
+            font-size: 16px;
+        }
+
+        .control-btn.right {
+            grid-column: 3;
+            grid-row: 2;
+        }
+
+        .control-btn.backward {
+            grid-column: 2;
+            grid-row: 3;
+        }
+
+        .timer {
+            text-align: center;
+            font-size: 14px;
+            opacity: 0.9;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .error-message {
+            background: rgba(239, 68, 68, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 14px;
+            display: none;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        /* Arrow icons */
+        .arrow {
+            width: 0;
+            height: 0;
+            border-style: solid;
+        }
+
+        .arrow-up {
+            border-width: 0 15px 25px 15px;
+            border-color: transparent transparent white transparent;
+        }
+
+        .arrow-down {
+            border-width: 25px 15px 0 15px;
+            border-color: white transparent transparent transparent;
+        }
+
+        .arrow-left {
+            border-width: 15px 25px 15px 0;
+            border-color: transparent white transparent transparent;
+        }
+
+        .arrow-right {
+            border-width: 15px 0 15px 25px;
+            border-color: transparent transparent transparent white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚗 Zarif's Car</h1>
+        <div class="subtitle">Remote Control Interface</div>
+
+        <div class="connection-info">
+            <strong>Connect to WiFi</strong>
+            Network: Zarifs Car<br>
+            Password: 12344321
+        </div>
+
+        <div class="error-message" id="errorMessage"></div>
+
+        <div class="status-card">
+            <div class="status-indicator">
+                <div class="status-dot" id="statusDot"></div>
+                <span id="statusText">Disconnected</span>
+            </div>
+            <div id="modeText">AUTO</div>
+        </div>
+
+        <div class="mode-switch">
+            <button class="mode-btn active" id="autoBtn" onclick="setMode('AUTO')">AUTO MODE</button>
+            <button class="mode-btn" id="manualBtn" onclick="setMode('MANUAL')">MANUAL MODE</button>
+        </div>
+
+        <div class="controls">
+            <button class="control-btn forward" id="forwardBtn" disabled>
+                <div class="arrow arrow-up"></div>
+            </button>
+            <button class="control-btn left" id="leftBtn" disabled>
+                <div class="arrow arrow-left"></div>
+            </button>
+            <button class="control-btn stop" id="stopBtn" disabled>STOP</button>
+            <button class="control-btn right" id="rightBtn" disabled>
+                <div class="arrow arrow-right"></div>
+            </button>
+            <button class="control-btn backward" id="backwardBtn" disabled>
+                <div class="arrow arrow-down"></div>
+            </button>
+        </div>
+
+        <div class="timer" id="timer">Timer: --:--</div>
+
+        <div class="footer">
+            Control your robotic car from anywhere<br>
+            © 2025 Zarif's Robotic Car
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://192.168.4.1';
+        let isManualMode = false;
+        let isConnected = false;
+        let statusInterval = null;
+        let commandInterval = null;
+        let currentCommand = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            startStatusPolling();
+            setupControlButtons();
+        });
+
+        // Status polling
+        function startStatusPolling() {
+            statusInterval = setInterval(async () => {
+                try {
+                    const response = await fetch(`${API_URL}/status`, {
+                        method: 'GET',
+                        mode: 'cors'
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        updateStatus(true, data);
+                    } else {
+                        updateStatus(false);
+                    }
+                } catch (error) {
+                    updateStatus(false);
+                }
+            }, 1000);
+        }
+
+        // Update status display
+        function updateStatus(connected, data = null) {
+            isConnected = connected;
+            const statusDot = document.getElementById('statusDot');
+            const statusText = document.getElementById('statusText');
+            const modeText = document.getElementById('modeText');
+            const timer = document.getElementById('timer');
+            const errorMessage = document.getElementById('errorMessage');
+
+            if (connected) {
+                statusDot.classList.add('connected');
+                statusText.textContent = 'Connected';
+                errorMessage.style.display = 'none';
+
+                if (data) {
+                    isManualMode = data.mode === 'MANUAL';
+                    modeText.textContent = data.mode;
+                    
+                    // Update mode buttons
+                    document.getElementById('autoBtn').classList.toggle('active', !isManualMode);
+                    document.getElementById('manualBtn').classList.toggle('active', isManualMode);
+
+                    // Update timer
+                    if (isManualMode && data.timeout > 0) {
+                        const minutes = Math.floor(data.timeout / 60);
+                        const seconds = data.timeout % 60;
+                        timer.textContent = `Timer: ${minutes}:${seconds.toString().padStart(2, '0')}`;
+                    } else {
+                        timer.textContent = 'Timer: --:--';
+                    }
+
+                    // Enable/disable controls
+                    updateControlButtons();
+                }
+            } else {
+                statusDot.classList.remove('connected');
+                statusText.textContent = 'Disconnected';
+                errorMessage.textContent = 'Cannot connect to car. Please connect to "Zarifs Car" WiFi network.';
+                errorMessage.style.display = 'block';
+                updateControlButtons();
+            }
+        }
+
+        // Set mode
+        async function setMode(mode) {
+            if (!isConnected) return;
+
+            try {
+                const formData = new URLSearchParams();
+                formData.append('mode', mode);
+
+                const response = await fetch(`${API_URL}/mode`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: formData,
+                    mode: 'cors'
+                });
+
+                if (response.ok) {
+                    isManualMode = (mode === 'MANUAL');
+                    updateControlButtons();
+                }
+            } catch (error) {
+                console.error('Error setting mode:', error);
+            }
+        }
+
+        // Send command
+        async function sendCommand(command) {
+            if (!isConnected || !isManualMode) return;
+
+            try {
+                const formData = new URLSearchParams();
+                formData.append('command', command);
+
+                await fetch(`${API_URL}/control`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: formData,
+                    mode: 'cors'
+                });
+            } catch (error) {
+                console.error('Error sending command:', error);
+            }
+        }
+
+        // Setup control buttons
+        function setupControlButtons() {
+            const buttons = ['forward', 'backward', 'left', 'right', 'stop'];
+            
+            buttons.forEach(direction => {
+                const btn = document.getElementById(`${direction}Btn`);
+                
+                // Touch events for mobile
+                btn.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    startCommand(direction.toUpperCase());
+                });
+                
+                btn.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    stopCommand();
+                });
+
+                // Mouse events for desktop
+                btn.addEventListener('mousedown', (e) => {
+                    e.preventDefault();
+                    startCommand(direction.toUpperCase());
+                });
+                
+                btn.addEventListener('mouseup', (e) => {
+                    e.preventDefault();
+                    stopCommand();
+                });
+
+                // Prevent context menu
+                btn.addEventListener('contextmenu', (e) => {
+                    e.preventDefault();
+                });
+            });
+        }
+
+        // Start continuous command
+        function startCommand(command) {
+            if (!isConnected || !isManualMode) return;
+            
+            currentCommand = command;
+            sendCommand(command);
+            
+            // Send command every 50ms
+            commandInterval = setInterval(() => {
+                if (currentCommand) {
+                    sendCommand(currentCommand);
+                }
+            }, 50);
+        }
+
+        // Stop continuous command
+        function stopCommand() {
+            if (commandInterval) {
+                clearInterval(commandInterval);
+                commandInterval = null;
+            }
+            currentCommand = null;
+            sendCommand('STOP');
+        }
+
+        // Update control buttons state
+        function updateControlButtons() {
+            const buttons = ['forward', 'backward', 'left', 'right', 'stop'];
+            const enabled = isConnected && isManualMode;
+            
+            buttons.forEach(direction => {
+                const btn = document.getElementById(`${direction}Btn`);
+                btn.disabled = !enabled;
+            });
+        }
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (statusInterval) clearInterval(statusInterval);
+            if (commandInterval) clearInterval(commandInterval);
+        });
+    </script>
+</body>
+</html>
