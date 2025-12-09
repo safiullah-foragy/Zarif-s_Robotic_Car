@@ -1,22 +1,101 @@
-# Zarif's Robotic Car - Complete Setup Guide
+# 🚗 Zarif's Robotic Car
 
-## 🚗 Project Overview
-An obstacle-avoiding robotic car with manual control via Android app over WiFi hotspot.
+[![GitHub Pages](https://img.shields.io/badge/Web_Control-Live-success?style=for-the-badge&logo=github)](https://safiullah-foragy.github.io/Zarif-s_Robotic_Car/)
+[![Arduino](https://img.shields.io/badge/Arduino-UNO-00979D?style=for-the-badge&logo=arduino)](https://www.arduino.cc/)
+[![ESP8266](https://img.shields.io/badge/ESP8266-WiFi-E7352C?style=for-the-badge&logo=espressif)](https://www.espressif.com/)
+[![Flutter](https://img.shields.io/badge/Flutter-App-02569B?style=for-the-badge&logo=flutter)](https://flutter.dev/)
 
-## 📋 Components Required
+A WiFi-controlled robotic car with autonomous obstacle avoidance, featuring web and mobile control interfaces.
 
-### Hardware:
-1. **Arduino UNO** (1x)
-2. **ESP8266 NodeMCU** (1x)
-3. **L293D Motor Driver IC** (1x)
-4. **HC-SR04 Ultrasonic Sensor** (1x)
-5. **SG90 Servo Motor** (1x)
-6. **DC Motors** (2x) - for left and right wheels
-7. **Robot Car Chassis** with wheels
-8. **Battery Pack** (7.4V - 12V for motors)
-9. **5V Power Supply** (for Arduino and ESP8266)
-10. **Jumper Wires** (Male-to-Male, Male-to-Female)
-11. **Breadboard** (optional, for prototyping)
+## 🌐 Web Control Interface
+
+**Control your car from any device with a browser!**
+
+👉 **[Launch Web Controller](https://safiullah-foragy.github.io/Zarif-s_Robotic_Car/)** 👈
+
+1. Connect to WiFi: `Zarifs Car` (Password: `12344321`)
+2. Open the web controller link above
+3. Switch to MANUAL mode and drive!
+
+## ✨ Features
+
+- 🤖 **Autonomous Mode**: Intelligent obstacle avoidance with ultrasonic sensor
+- 🎮 **Manual Mode**: Full remote control via web or mobile app
+- 📡 **WiFi Control**: ESP8266-based wireless connectivity
+- 🔍 **Smart Navigation**: Servo-mounted sensor scans for the best path
+- 📱 **Multi-Platform**: Web interface + Flutter mobile app
+- ⏱️ **Auto Safety**: 5-minute manual mode timeout
+
+## 🛠️ Hardware Components
+
+| Component | Description |
+|-----------|-------------|
+| Arduino UNO | Main controller |
+| Adafruit Motor Shield v1 | 4-channel motor driver |
+| 4× DC Motors | M1=FL, M2=RL, M3=FR, M4=RR |
+| ESP8266 NodeMCU | WiFi module (192.168.4.1) |
+| HC-SR04 | Ultrasonic sensor (30cm range) |
+| SG90 Servo | Sensor scanning (30°-150°) |
+| 3× Li-ion 3.7V | 11.1V battery pack |
+
+---
+
+## 🚀 Quick Start
+
+### 1. Upload Arduino Code
+
+```bash
+# Disconnect ESP8266 from Pin 0/1 before upload
+# Upload arduino_car.ino to Arduino UNO
+# Reconnect ESP8266 after upload
+```
+
+### 2. Upload ESP8266 Code
+
+```bash
+# Upload esp8266_wifi.ino to ESP8266 NodeMCU
+# WiFi Network: "Zarifs Car"
+# Password: "12344321"
+# IP Address: 192.168.4.1
+```
+
+### 3. Control Your Car
+
+**Option A: Web Interface (Recommended)**
+- Connect to "Zarifs Car" WiFi
+- Open: https://safiullah-foragy.github.io/Zarif-s_Robotic_Car/
+- Works on any device with a browser!
+
+**Option B: Flutter Mobile App**
+- Build and install from `FlutterApp/`
+- See [Flutter Build Instructions](FlutterApp/BUILD_INSTRUCTIONS.md)
+
+## 🎮 Control Modes
+
+### 🤖 AUTO Mode
+1. Car moves forward automatically
+2. Detects obstacles at 30cm
+3. Stops and reverses slightly
+4. Servo scans left (160°) and right (20°)
+5. Chooses the clearest path
+6. Continues driving
+
+### 🕹️ MANUAL Mode
+- **↑** Forward
+- **↓** Backward
+- **←** Turn Left
+- **→** Turn Right
+- **⏹️** Stop
+- **⏱️** 5-minute timeout → Auto mode
+
+## 📡 API Endpoints
+
+| Endpoint | Method | Parameters | Description |
+|----------|--------|------------|-------------|
+| `/` | GET | - | Web interface |
+| `/status` | GET | - | Get mode, timer, clients |
+| `/mode` | POST | `mode=AUTO\|MANUAL` | Set control mode |
+| `/control` | POST | `command=FORWARD\|BACKWARD\|LEFT\|RIGHT\|STOP` | Send movement command |
 
 ---
 
