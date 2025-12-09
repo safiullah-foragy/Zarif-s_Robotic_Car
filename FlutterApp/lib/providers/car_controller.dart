@@ -7,53 +7,44 @@ class CarController extends ChangeNotifier {
   
   bool _isManualMode = false;
   bool _isConnected = false;
-  int _remainingTime = 0;
-  Timer? _statusTimer;
   Timer? _commandTimer;
+  Timer? _statusTimer;
   String _currentCommand = 'STOP';
   bool _isSendingCommand = false;
+  int _remainingTime = 300; // 5 minutes in seconds
 
   bool get isManualMode => _isManualMode;
   bool get isConnected => _isConnected;
-  int get remainingTime => _remainingTime;
   String get currentCommand => _currentCommand;
+  int get remainingTime => _remainingTime;
 
   CarController() {
-    _startStatusUpdates();
+    _startStatusPolling();
   }
 
-  void _startStatusUpdates() {
-    _statusTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      _updateStatus();
-    });
-  }
-
-  Future<void> _updateStatus() async {
-    try {
+  void _startStatusPolling() {
+    _statusTimer = Timer.periodic(const Duration(seconds: 1), (timer) async {
       final status = await _apiService.getStatus();
-      
       if (status != null) {
-        _isConnected = true;
+        _isConnected = status['connected'] ?? false;
         
-        // Check if mode changed from server (timeout)
-        if (status['mode'] == 'AUTO' && _isManualMode) {
-          _isManualMode = false;
-          _stopContinuousCommand();
-          notifyListeners();
-        }
+        // Sync mode with ESP8266
+        final serverMode = status['mode'] ?? 'AUTO';
+        _isManualMode = (serverMode == 'MANUAL');
         
-        if (_isManualMode && status['timeout'] != null) {
-          _remainingTime = status['timeout'] as int;
+        // Update remaining time from server
+        if (_isManualMode) {
+          _remainingTime = status['timeout'] ?? 300;
         } else {
-          _remainingTime = 0;
+          _remainingTime = 300;
         }
         
         notifyListeners();
+      } else {
+        _isConnected = false;
+        notifyListeners();
       }
-    } catch (e) {
-      _isConnected = false;
-      notifyListeners();
-    }
+    });
   }
 
   Future<void> switchToManualMode() async {
@@ -61,6 +52,7 @@ class CarController extends ChangeNotifier {
       final success = await _apiService.setMode('MANUAL');
       if (success) {
         _isManualMode = true;
+        _remainingTime = 300; // Reset timer
         notifyListeners();
       }
     } catch (e) {
@@ -116,16 +108,10 @@ class CarController extends ChangeNotifier {
     }
   }
 
-  String get formattedTime {
-    final minutes = _remainingTime ~/ 60;
-    final seconds = _remainingTime % 60;
-    return '$minutes:${seconds.toString().padLeft(2, '0')}';
-  }
-
   @override
   void dispose() {
-    _statusTimer?.cancel();
     _commandTimer?.cancel();
+    _statusTimer?.cancel();
     super.dispose();
   }
 }

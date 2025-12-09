@@ -13,7 +13,7 @@ dependencies:
   # UI Components
   cupertino_icons: ^1.0.2
   
-  # HTTP Requests
+  # HTTP Communication
   http: ^1.1.0
   
   # State Management

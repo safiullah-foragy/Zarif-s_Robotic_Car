@@ -1,46 +1,55 @@
 package com.zarifscar.controller;
 
-import android.animation.ObjectAnimator;
-import android.animation.ValueAnimator;
+import android.Manifest;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
-
-import org.json.JSONObject;
-
-import java.util.HashMap;
-import java.util.Map;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Set;
+import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final String BASE_URL = "http://192.168.4.1";
+    private static final UUID BT_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+    private static final int REQUEST_ENABLE_BT = 1;
+    private static final int REQUEST_BT_PERMISSIONS = 2;
+    
+    private BluetoothAdapter bluetoothAdapter;
+    private BluetoothSocket bluetoothSocket;
+    private OutputStream outputStream;
+    private boolean isConnected = false;
     
     private Switch modeSwitch;
-    private Button btnForward, btnBackward, btnLeft, btnRight;
-    private TextView tvStatus, tvTimer, tvTitle;
+    private Button btnForward, btnBackward, btnLeft, btnRight, btnConnect;
+    private TextView tvStatus, tvTitle;
     private ImageView ivCar;
     private View manualControlPanel;
     
-    private RequestQueue requestQueue;
     private Handler handler;
     private Handler commandHandler;
-    private Runnable statusRunnable;
     private Runnable commandRunnable;
     
     private boolean isManualMode = false;
@@ -54,22 +63,29 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         
+        // Initialize Bluetooth
+        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (bluetoothAdapter == null) {
+            Toast.makeText(this, "Device doesn't support Bluetooth", Toast.LENGTH_LONG).show();
+            finish();
+            return;
+        }
+        
         // Initialize views
         initViews();
         
-        // Initialize request queue
-        requestQueue = Volley.newRequestQueue(this);
+        // Initialize handlers
         handler = new Handler(Looper.getMainLooper());
         commandHandler = new Handler(Looper.getMainLooper());
         
         // Setup listeners
         setupListeners();
         
-        // Start status updates
-        startStatusUpdates();
-        
         // Start title animation
         startTitleAnimation();
+        
+        // Check Bluetooth permissions
+        checkBluetoothPermissions();
     }
     
     private void initViews() {
@@ -79,19 +95,140 @@ public class MainActivity extends AppCompatActivity {
         btnBackward = findViewById(R.id.btnBackward);
         btnLeft = findViewById(R.id.btnLeft);
         btnRight = findViewById(R.id.btnRight);
+        btnConnect = findViewById(R.id.btnConnect);
         tvStatus = findViewById(R.id.tvStatus);
-        tvTimer = findViewById(R.id.tvTimer);
         ivCar = findViewById(R.id.ivCar);
         manualControlPanel = findViewById(R.id.manualControlPanel);
         
         // Initially hide manual controls
         manualControlPanel.setVisibility(View.GONE);
-        tvTimer.setVisibility(View.GONE);
+        tvStatus.setText("Status: Not Connected");
+    }
+    
+    private void checkBluetoothPermissions() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) 
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.BLUETOOTH_CONNECT, 
+                                Manifest.permission.BLUETOOTH_SCAN},
+                    REQUEST_BT_PERMISSIONS);
+        } else {
+            enableBluetooth();
+        }
+    }
+    
+    private void enableBluetooth() {
+        if (!bluetoothAdapter.isEnabled()) {
+            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) 
+                    == PackageManager.PERMISSION_GRANTED) {
+                startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+            }
+        }
+    }
+    
+    private void showDeviceList() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) 
+                != PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(this, "Bluetooth permission required", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
+        ArrayList<String> deviceList = new ArrayList<>();
+        final ArrayList<BluetoothDevice> devices = new ArrayList<>();
+        
+        for (BluetoothDevice device : pairedDevices) {
+            deviceList.add(device.getName() + "\n" + device.getAddress());
+            devices.add(device);
+        }
+        
+        if (deviceList.isEmpty()) {
+            Toast.makeText(this, "No paired devices. Pair with HC-05 in Bluetooth settings.", 
+                    Toast.LENGTH_LONG).show();
+            return;
+        }
+        
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Select Bluetooth Device");
+        
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, 
+                android.R.layout.simple_list_item_1, deviceList);
+        
+        builder.setAdapter(adapter, (dialog, which) -> {
+            BluetoothDevice device = devices.get(which);
+            connectToDevice(device);
+        });
+        
+        builder.setNegativeButton("Cancel", null);
+        builder.show();
+    }
+    
+    private void connectToDevice(BluetoothDevice device) {
+        new Thread(() -> {
+            try {
+                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) 
+                        != PackageManager.PERMISSION_GRANTED) {
+                    return;
+                }
+                
+                bluetoothSocket = device.createRfcommSocketToServiceRecord(BT_UUID);
+                bluetoothSocket.connect();
+                outputStream = bluetoothSocket.getOutputStream();
+                isConnected = true;
+                
+                runOnUiThread(() -> {
+                    tvStatus.setText("Connected to " + device.getName());
+                    btnConnect.setText("Disconnect");
+                    Toast.makeText(this, "Connected successfully!", Toast.LENGTH_SHORT).show();
+                });
+                
+            } catch (IOException e) {
+                isConnected = false;
+                runOnUiThread(() -> {
+                    tvStatus.setText("Connection failed");
+                    Toast.makeText(this, "Failed to connect: " + e.getMessage(), 
+                            Toast.LENGTH_LONG).show();
+                });
+            }
+        }).start();
+    }
+    
+    private void disconnect() {
+        try {
+            if (bluetoothSocket != null) {
+                bluetoothSocket.close();
+            }
+            if (outputStream != null) {
+                outputStream.close();
+            }
+            isConnected = false;
+            tvStatus.setText("Disconnected");
+            btnConnect.setText("Connect");
+            Toast.makeText(this, "Disconnected", Toast.LENGTH_SHORT).show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
     
     private void setupListeners() {
+        // Connect button listener
+        btnConnect.setOnClickListener(v -> {
+            if (isConnected) {
+                disconnect();
+            } else {
+                showDeviceList();
+            }
+        });
+        
         // Mode switch listener
         modeSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (!isConnected) {
+                buttonView.setChecked(false);
+                Toast.makeText(this, "Please connect to device first", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            
             if (isChecked) {
                 switchToManualMode();
             } else {
@@ -181,56 +318,20 @@ public class MainActivity extends AppCompatActivity {
     }
     
     private void switchToManualMode() {
-        String url = BASE_URL + "/mode";
-        
-        StringRequest request = new StringRequest(Request.Method.POST, url,
-                response -> {
-                    isManualMode = true;
-                    manualControlPanel.setVisibility(View.VISIBLE);
-                    tvTimer.setVisibility(View.VISIBLE);
-                    tvStatus.setText("Mode: MANUAL");
-                    Toast.makeText(this, "Manual mode activated", Toast.LENGTH_SHORT).show();
-                },
-                error -> {
-                    modeSwitch.setChecked(false);
-                    Toast.makeText(this, "Failed to switch mode", Toast.LENGTH_SHORT).show();
-                }) {
-            @Override
-            protected Map<String, String> getParams() {
-                Map<String, String> params = new HashMap<>();
-                params.put("mode", "MANUAL");
-                return params;
-            }
-        };
-        
-        requestQueue.add(request);
+        sendBluetoothCommand("MODE:MANUAL");
+        isManualMode = true;
+        manualControlPanel.setVisibility(View.VISIBLE);
+        tvStatus.setText("Mode: MANUAL");
+        Toast.makeText(this, "Manual mode activated", Toast.LENGTH_SHORT).show();
     }
     
     private void switchToAutoMode() {
-        String url = BASE_URL + "/mode";
-        
-        StringRequest request = new StringRequest(Request.Method.POST, url,
-                response -> {
-                    isManualMode = false;
-                    manualControlPanel.setVisibility(View.GONE);
-                    tvTimer.setVisibility(View.GONE);
-                    tvStatus.setText("Mode: AUTO");
-                    stopContinuousCommand();
-                    Toast.makeText(this, "Auto mode activated", Toast.LENGTH_SHORT).show();
-                },
-                error -> {
-                    modeSwitch.setChecked(true);
-                    Toast.makeText(this, "Failed to switch mode", Toast.LENGTH_SHORT).show();
-                }) {
-            @Override
-            protected Map<String, String> getParams() {
-                Map<String, String> params = new HashMap<>();
-                params.put("mode", "AUTO");
-                return params;
-            }
-        };
-        
-        requestQueue.add(request);
+        sendBluetoothCommand("MODE:AUTO");
+        isManualMode = false;
+        manualControlPanel.setVisibility(View.GONE);
+        tvStatus.setText("Mode: AUTO");
+        stopContinuousCommand();
+        Toast.makeText(this, "Auto mode activated", Toast.LENGTH_SHORT).show();
     }
     
     private void startContinuousCommand(String command) {
@@ -241,7 +342,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 if (isSendingCommand && isManualMode) {
-                    sendCommand(currentCommand);
+                    sendBluetoothCommand(currentCommand);
                     commandHandler.postDelayed(this, 50); // Send every 50ms
                 }
             }
@@ -255,93 +356,37 @@ public class MainActivity extends AppCompatActivity {
         if (commandRunnable != null) {
             commandHandler.removeCallbacks(commandRunnable);
         }
-        sendCommand("STOP");
+        sendBluetoothCommand("STOP");
     }
     
-    private void sendCommand(String command) {
-        String url = BASE_URL + "/control";
+    private void sendBluetoothCommand(String command) {
+        if (!isConnected || outputStream == null) {
+            return;
+        }
         
-        StringRequest request = new StringRequest(Request.Method.POST, url,
-                response -> {
-                    // Command sent successfully
-                },
-                error -> {
-                    // Handle error silently for continuous commands
-                }) {
-            @Override
-            protected Map<String, String> getParams() {
-                Map<String, String> params = new HashMap<>();
-                params.put("command", command);
-                return params;
-            }
-        };
-        
-        requestQueue.add(request);
-    }
-    
-    private void startStatusUpdates() {
-        statusRunnable = new Runnable() {
-            @Override
-            public void run() {
-                updateStatus();
-                handler.postDelayed(this, 1000); // Update every second
-            }
-        };
-        
-        handler.post(statusRunnable);
-    }
-    
-    private void updateStatus() {
-        String url = BASE_URL + "/status";
-        
-        StringRequest request = new StringRequest(Request.Method.GET, url,
-                response -> {
-                    try {
-                        JSONObject json = new JSONObject(response);
-                        String mode = json.getString("mode");
-                        int timeout = json.getInt("timeout");
-                        
-                        if (mode.equals("AUTO") && isManualMode) {
-                            // Server switched to auto mode (timeout)
-                            runOnUiThread(() -> {
-                                isManualMode = false;
-                                modeSwitch.setChecked(false);
-                                manualControlPanel.setVisibility(View.GONE);
-                                tvTimer.setVisibility(View.GONE);
-                                tvStatus.setText("Mode: AUTO (Timeout)");
-                                Toast.makeText(MainActivity.this, 
-                                    "Auto mode: 5 min timeout", Toast.LENGTH_LONG).show();
-                            });
-                        }
-                        
-                        if (isManualMode && timeout > 0) {
-                            int minutes = timeout / 60;
-                            int seconds = timeout % 60;
-                            tvTimer.setText(String.format("Time remaining: %d:%02d", minutes, seconds));
-                        }
-                        
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                },
-                error -> {
-                    tvStatus.setText("Status: Disconnected");
+        new Thread(() -> {
+            try {
+                outputStream.write((command + "\n").getBytes());
+                outputStream.flush();
+            } catch (IOException e) {
+                runOnUiThread(() -> {
+                    Toast.makeText(this, "Failed to send command", Toast.LENGTH_SHORT).show();
+                    isConnected = false;
+                    tvStatus.setText("Connection lost");
                 });
-        
-        requestQueue.add(request);
+            }
+        }).start();
     }
     
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (handler != null && statusRunnable != null) {
-            handler.removeCallbacks(statusRunnable);
-        }
         if (commandHandler != null && commandRunnable != null) {
             commandHandler.removeCallbacks(commandRunnable);
         }
         if (carAnimator != null) {
             carAnimator.cancel();
         }
+        disconnect();
     }
 }

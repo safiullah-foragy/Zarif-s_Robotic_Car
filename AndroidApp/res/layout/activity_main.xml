@@ -50,12 +50,27 @@
         android:padding="10dp"
         android:background="@drawable/status_background" />
 
+    <!-- Connect Button -->
+    <Button
+        android:id="@+id/btnConnect"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tvStatus"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp"
+        android:text="Connect Bluetooth"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="#FFFFFF"
+        android:backgroundTint="#2196F3"
+        android:padding="12dp" />
+
     <!-- Mode Switch -->
     <LinearLayout
         android:id="@+id/modeSwitchContainer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/tvStatus"
+        android:layout_below="@id/btnConnect"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="20dp"
         android:orientation="horizontal"
@@ -81,26 +96,12 @@
             android:trackTint="#CCCCCC" />
     </LinearLayout>
 
-    <!-- Timer Display -->
-    <TextView
-        android:id="@+id/tvTimer"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/modeSwitchContainer"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="10dp"
-        android:text="Time remaining: 5:00"
-        android:textSize="16sp"
-        android:textColor="#FFEB3B"
-        android:textStyle="bold"
-        android:visibility="gone" />
-
     <!-- Manual Control Panel -->
     <RelativeLayout
         android:id="@+id/manualControlPanel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/tvTimer"
+        android:layout_below="@id/modeSwitchContainer"
         android:layout_marginTop="30dp"
         android:visibility="gone">
 
@@ -174,7 +175,7 @@
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="10dp"
-        android:text="WiFi: Zarifs Car | Pass: 12344321"
+        android:text="Bluetooth: HC-05/HC-06 | PIN: 1234"
         android:textSize="12sp"
         android:textColor="#FFFFFF"
         android:alpha="0.7" />

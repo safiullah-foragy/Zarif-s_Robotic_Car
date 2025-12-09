@@ -32,7 +32,7 @@ class HomeScreen extends StatelessWidget {
             padding: const EdgeInsets.all(16.0),
             child: Column(
               children: [
-                const SizedBox(height: 20),
+                const SizedBox(height: 10),
                 
                 // Animated Title
                 const AnimatedTitle(),
@@ -51,45 +51,6 @@ class HomeScreen extends StatelessWidget {
                 
                 // Mode Switch
                 const ModeSwitch(),
-                
-                const SizedBox(height: 10),
-                
-                // Timer Display
-                Consumer<CarController>(
-                  builder: (context, controller, child) {
-                    if (controller.isManualMode) {
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [Color(0xFFff6b6b), Color(0xFFee5a6f)],
-                            ),
-                            borderRadius: BorderRadius.circular(20),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Color(0xFFff6b6b).withOpacity(0.5),
-                                blurRadius: 15,
-                                spreadRadius: 2,
-                              ),
-                            ],
-                          ),
-                          child: Text(
-                            '⏱ ${controller.formattedTime}',
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                              letterSpacing: 1.2,
-                            ),
-                          ),
-                        ),
-                      );
-                    }
-                    return const SizedBox.shrink();
-                  },
-                ),
                 
                 const SizedBox(height: 30),
                 

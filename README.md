@@ -354,6 +354,7 @@ Important: All grounds must be connected together!
 This project is open-source and free to use for educational purposes.
 
 ## 👨‍💻 Created By
-Zarif - Robotic Car Controller System
+**Sofiullah Foragy**  
+Project created for **Zarif's Robotic Car**
 
 Enjoy your obstacle-avoiding robotic car! 🚗💨

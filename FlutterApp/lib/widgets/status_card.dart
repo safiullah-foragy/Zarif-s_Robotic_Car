@@ -31,37 +31,56 @@ class StatusCard extends StatelessWidget {
               ),
             ],
           ),
-          child: Row(
+          child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Connection indicator
-              Container(
-                width: 16,
-                height: 16,
-                decoration: BoxDecoration(
-                  color: controller.isConnected ? Color(0xFF00ff9d) : Color(0xFFff3366),
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: controller.isConnected ? Color(0xFF00ff9d).withOpacity(0.6) : Color(0xFFff3366).withOpacity(0.6),
-                      blurRadius: 10,
-                      spreadRadius: 2,
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Connection indicator
+                  Container(
+                    width: 16,
+                    height: 16,
+                    decoration: BoxDecoration(
+                      color: controller.isConnected ? Color(0xFF00ff9d) : Color(0xFFff3366),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: controller.isConnected ? Color(0xFF00ff9d).withOpacity(0.6) : Color(0xFFff3366).withOpacity(0.6),
+                          blurRadius: 10,
+                          spreadRadius: 2,
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(width: 12),
+                  
+                  // Status text
+                  Text(
+                    controller.isManualMode ? 'MANUAL MODE' : 'AUTO MODE',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      letterSpacing: 1.5,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 12),
               
-              // Status text
-              Text(
-                controller.isManualMode ? 'MANUAL MODE' : 'AUTO MODE',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  letterSpacing: 1.5,
+              // Timer display (only in manual mode)
+              if (controller.isManualMode && controller.remainingTime > 0)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text(
+                    'Time: ${(controller.remainingTime ~/ 60)}:${(controller.remainingTime % 60).toString().padLeft(2, '0')}',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.yellowAccent,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
-              ),
             ],
           ),
         );
