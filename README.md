@@ -67,8 +67,9 @@ A WiFi-controlled robotic car with autonomous obstacle avoidance, featuring web 
 - Works on any device with a browser!
 
 **Option B: Flutter Mobile App**
-- Build and install from `FlutterApp/`
-- See [Flutter Build Instructions](FlutterApp/BUILD_INSTRUCTIONS.md)
+- 📱 **[Download APK (42MB)](https://github.com/safiullah-foragy/Zarif-s_Robotic_Car/raw/main/releases/ZarifsCarController-v1.0.apk)**
+- Install on your Android phone
+- Or build from source: [Flutter Build Instructions](FlutterApp/BUILD_INSTRUCTIONS.md)
 
 ## 🎮 Control Modes
 
