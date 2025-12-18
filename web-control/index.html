@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zarif's Car Controller</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 30px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .header .car-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        .connection-section {
+            margin-bottom: 30px;
+        }
+
+        .ip-input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .ip-input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .ip-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .connect-btn {
+            padding: 12px 25px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .connect-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .status {
+            padding: 12px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .status.connected {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status.disconnected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .mode-switch {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .mode-btn {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .mode-btn.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-color: #667eea;
+        }
+
+        .mode-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .controls.hidden {
+            display: none;
+        }
+
+        .control-btn {
+            width: 100px;
+            height: 100px;
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transition: all 0.1s;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .control-btn:active {
+            transform: scale(0.95);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .control-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .control-btn.forward {
+            background: linear-gradient(135deg, #00ff9d, #00d4aa);
+        }
+
+        .control-btn.backward {
+            background: linear-gradient(135deg, #ff4081, #f50057);
+        }
+
+        .control-btn.left {
+            background: linear-gradient(135deg, #00e5ff, #00b8d4);
+        }
+
+        .control-btn.right {
+            background: linear-gradient(135deg, #ffd000, #ffab00);
+        }
+
+        .row {
+            display: flex;
+            gap: 50px;
+        }
+
+        .info-text {
+            text-align: center;
+            color: #666;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px;
+            }
+
+            .control-btn {
+                width: 80px;
+                height: 80px;
+                font-size: 14px;
+            }
+
+            .row {
+                gap: 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="car-icon">🚗</div>
+            <h1>Zarif's Car Controller</h1>
+        </div>
+
+        <div class="connection-section">
+            <div class="ip-input-group">
+                <input type="text" class="ip-input" id="ipInput" placeholder="ESP8266 IP (e.g., 192.168.4.1)" value="192.168.4.1">
+                <button class="connect-btn" id="connectBtn">Connect</button>
+            </div>
+            <div class="status disconnected" id="statusDiv">Not Connected</div>
+        </div>
+
+        <div class="mode-switch">
+            <button class="mode-btn" id="autoBtn" disabled>🤖 AUTO</button>
+            <button class="mode-btn" id="manualBtn" disabled>🎮 MANUAL</button>
+        </div>
+
+        <div class="controls hidden" id="controls">
+            <button class="control-btn forward" id="forwardBtn">
+                ↑<br>FORWARD
+            </button>
+            <div class="row">
+                <button class="control-btn left" id="leftBtn">
+                    ←<br>LEFT
+                </button>
+                <button class="control-btn right" id="rightBtn">
+                    →<br>RIGHT
+                </button>
+            </div>
+            <button class="control-btn backward" id="backwardBtn">
+                ↓<br>BACKWARD
+            </button>
+        </div>
+
+        <div class="info-text" id="infoText">
+            Enter ESP8266 IP and click Connect
+        </div>
+    </div>
+
+    <script>
+        let espIP = '';
+        let isConnected = false;
+        let isManualMode = false;
+        let commandInterval = null;
+        let currentCommand = 'STOP';
+        let statusCheckInterval = null;
+
+        const ipInput = document.getElementById('ipInput');
+        const connectBtn = document.getElementById('connectBtn');
+        const statusDiv = document.getElementById('statusDiv');
+        const autoBtn = document.getElementById('autoBtn');
+        const manualBtn = document.getElementById('manualBtn');
+        const controls = document.getElementById('controls');
+        const infoText = document.getElementById('infoText');
+        const forwardBtn = document.getElementById('forwardBtn');
+        const backwardBtn = document.getElementById('backwardBtn');
+        const leftBtn = document.getElementById('leftBtn');
+        const rightBtn = document.getElementById('rightBtn');
+
+        // Connect to ESP8266
+        connectBtn.addEventListener('click', async () => {
+            espIP = ipInput.value.trim();
+            if (!espIP) {
+                alert('Please enter ESP8266 IP address');
+                return;
+            }
+
+            try {
+                const response = await fetch(`http://${espIP}/status`);
+                const data = await response.json();
+                
+                isConnected = true;
+                statusDiv.textContent = '✓ Connected';
+                statusDiv.className = 'status connected';
+                connectBtn.textContent = 'Connected';
+                connectBtn.disabled = true;
+                ipInput.disabled = true;
+                autoBtn.disabled = false;
+                manualBtn.disabled = false;
+                infoText.textContent = 'Connected! Select a mode to start.';
+
+                // Update mode
+                updateMode(data.mode);
+
+                // Start status polling
+                startStatusPolling();
+            } catch (error) {
+                alert('Connection failed! Make sure you are connected to the car\'s WiFi and the IP is correct.');
+                console.error('Connection error:', error);
+            }
+        });
+
+        // Mode switching
+        autoBtn.addEventListener('click', () => setMode('AUTO'));
+        manualBtn.addEventListener('click', () => setMode('MANUAL'));
+
+        async function setMode(mode) {
+            try {
+                const response = await fetch(`http://${espIP}/mode`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mode: mode })
+                });
+                
+                if (response.ok) {
+                    updateMode(mode);
+                }
+            } catch (error) {
+                console.error('Error setting mode:', error);
+            }
+        }
+
+        function updateMode(mode) {
+            isManualMode = (mode === 'MANUAL');
+            
+            if (isManualMode) {
+                autoBtn.classList.remove('active');
+                manualBtn.classList.add('active');
+                controls.classList.remove('hidden');
+                infoText.textContent = 'Manual mode: Hold buttons to move';
+            } else {
+                autoBtn.classList.add('active');
+                manualBtn.classList.remove('active');
+                controls.classList.add('hidden');
+                stopContinuousCommand();
+                infoText.textContent = 'Auto mode: Car avoids obstacles automatically';
+            }
+        }
+
+        // Control buttons
+        function setupControlButton(button, command) {
+            // Mouse events
+            button.addEventListener('mousedown', () => startContinuousCommand(command));
+            button.addEventListener('mouseup', stopContinuousCommand);
+            button.addEventListener('mouseleave', stopContinuousCommand);
+
+            // Touch events for mobile
+            button.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                startContinuousCommand(command);
+            });
+            button.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                stopContinuousCommand();
+            });
+            button.addEventListener('touchcancel', stopContinuousCommand);
+        }
+
+        setupControlButton(forwardBtn, 'FORWARD');
+        setupControlButton(backwardBtn, 'BACKWARD');
+        setupControlButton(leftBtn, 'LEFT');
+        setupControlButton(rightBtn, 'RIGHT');
+
+        function startContinuousCommand(command) {
+            if (!isManualMode) return;
+            
+            currentCommand = command;
+            sendCommand(command);
+            
+            // Send command every 50ms
+            if (commandInterval) {
+                clearInterval(commandInterval);
+            }
+            commandInterval = setInterval(() => {
+                sendCommand(currentCommand);
+            }, 50);
+        }
+
+        function stopContinuousCommand() {
+            if (commandInterval) {
+                clearInterval(commandInterval);
+                commandInterval = null;
+            }
+            currentCommand = 'STOP';
+            sendCommand('STOP');
+        }
+
+        async function sendCommand(command) {
+            try {
+                await fetch(`http://${espIP}/control`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ command: command })
+                });
+            } catch (error) {
+                console.error('Error sending command:', error);
+            }
+        }
+
+        function startStatusPolling() {
+            if (statusCheckInterval) {
+                clearInterval(statusCheckInterval);
+            }
+            
+            statusCheckInterval = setInterval(async () => {
+                try {
+                    const response = await fetch(`http://${espIP}/status`);
+                    const data = await response.json();
+                    
+                    if (!isConnected) {
+                        isConnected = true;
+                        statusDiv.textContent = '✓ Connected';
+                        statusDiv.className = 'status connected';
+                    }
+                    
+                    // Update mode if changed
+                    if ((data.mode === 'MANUAL') !== isManualMode) {
+                        updateMode(data.mode);
+                    }
+                } catch (error) {
+                    if (isConnected) {
+                        isConnected = false;
+                        statusDiv.textContent = '✗ Connection Lost';
+                        statusDiv.className = 'status disconnected';
+                    }
+                }
+            }, 1000);
+        }
+
+        // Keyboard controls
+        document.addEventListener('keydown', (e) => {
+            if (!isManualMode || e.repeat) return;
+            
+            switch(e.key.toLowerCase()) {
+                case 'w':
+                case 'arrowup':
+                    startContinuousCommand('FORWARD');
+                    break;
+                case 's':
+                case 'arrowdown':
+                    startContinuousCommand('BACKWARD');
+                    break;
+                case 'a':
+                case 'arrowleft':
+                    startContinuousCommand('LEFT');
+                    break;
+                case 'd':
+                case 'arrowright':
+                    startContinuousCommand('RIGHT');
+                    break;
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            if (!isManualMode) return;
+            
+            switch(e.key.toLowerCase()) {
+                case 'w':
+                case 's':
+                case 'a':
+                case 'd':
+                case 'arrowup':
+                case 'arrowdown':
+                case 'arrowleft':
+                case 'arrowright':
+                    stopContinuousCommand();
+                    break;
+            }
+        });
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (commandInterval) {
+                clearInterval(commandInterval);
+            }
+            if (statusCheckInterval) {
+                clearInterval(statusCheckInterval);
+            }
+        });
+    </script>
+</body>
+</html>
