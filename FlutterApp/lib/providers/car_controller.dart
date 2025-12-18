@@ -74,6 +74,9 @@ class CarController extends ChangeNotifier {
   }
 
   void startContinuousCommand(String command) {
+    // Stop any existing command first
+    _commandTimer?.cancel();
+    
     _currentCommand = command;
     _isSendingCommand = true;
     
@@ -93,11 +96,14 @@ class CarController extends ChangeNotifier {
   }
 
   void _stopContinuousCommand() {
-    _isSendingCommand = false;
+    // Cancel timer FIRST to prevent any more commands
     _commandTimer?.cancel();
     _commandTimer = null;
-    _sendCommand('STOP');
+    
+    // THEN set flag and send STOP
+    _isSendingCommand = false;
     _currentCommand = 'STOP';
+    _sendCommand('STOP');
   }
 
   Future<void> _sendCommand(String command) async {
