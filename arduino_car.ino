@@ -13,9 +13,6 @@
  * - TRIG -> Pin 2
  * - ECHO -> Pin 3
  * 
- * Servo Motor:
- * - Uses Shield's SERVO_1 header (Pin 9 or 10)
- * 
  * ESP8266 WiFi Module:
  * - ESP8266 TX -> Arduino RX (Pin 0)
  * - ESP8266 RX -> Arduino TX (Pin 1)
@@ -28,7 +25,6 @@
  */
 
 #include <AFMotor.h>
-#include <Servo.h>
 
 // Create motor objects (connected to M1, M2, M3, M4 on shield)
 // M1 = Front Left, M2 = Rear Left, M3 = Front Right, M4 = Rear Right
@@ -44,13 +40,8 @@ AF_DCMotor motorRearRight(4);   // M4
 #define TRIG_PIN 2
 #define ECHO_PIN 3
 
-// Servo pin (Pin 9 for SERVO_1 - better compatibility with AFMotor)
-#define SERVO_PIN 9
-
 // Distance threshold (in cm)
 #define OBSTACLE_DISTANCE 30
-
-Servo myServo;
 
 // Control mode
 bool manualMode = false;
@@ -72,26 +63,10 @@ void setup() {
   pinMode(TRIG_PIN, OUTPUT);
   pinMode(ECHO_PIN, INPUT);
   
-  // Initialize servo
-  myServo.attach(SERVO_PIN);
-  
   // Stop motors first
   stopMotors();
   delay(500);
   
-  // Test servo sweep
-  Serial.println("Testing servo...");
-  myServo.write(30);
-  delay(1000);
-  
-  myServo.write(90);
-  delay(1000);
-  
-  myServo.write(150);
-  delay(1000);
-  
-  myServo.write(90);
-  delay(1000);
   Serial.println("Setup complete - Ready");
 }
 
@@ -169,63 +144,47 @@ void autoMode() {
     
     Serial.println("Obstacle detected! Reversing...");
     moveBackward();
-    delay(400); // Reverse a bit
+    delay(500); // Reverse a bit
     stopMotors();
     delay(300);
     
-    // Re-attach servo (workaround for AFMotor conflict)
-    myServo.attach(SERVO_PIN);
-    delay(100);
+    // Turn left and check
+    Serial.println("Turning left to check...");
+    turnLeft();
+    delay(600);
+    stopMotors();
+    delay(300);
     
-    // Now scan with servo (motors must be stopped!)
-    Serial.println("Scanning...");
-    
-    // Scan left
-    myServo.write(160);
-    delay(800); // Longer delay for servo to reach position
     long leftDistance = getDistance();
-    Serial.print("Left: ");
+    Serial.print("Left distance: ");
     Serial.println(leftDistance);
     
-    // Return to center briefly
-    myServo.write(90);
-    delay(500);
-    
-    // Scan right
-    myServo.write(20);
-    delay(800); // Longer delay for servo to reach position
-    long rightDistance = getDistance();
-    Serial.print("Right: ");
-    Serial.println(rightDistance);
-    
-    // Return to center before moving
-    myServo.write(90);
-    delay(500);
-    
-    // Detach servo before motors run (prevents interference)
-    myServo.detach();
-    delay(100);
-    
-    // Decide direction
-    if (leftDistance > rightDistance && leftDistance > OBSTACLE_DISTANCE) {
-      // Turn left
-      Serial.println("Turning left");
-      turnLeft();
-      delay(600);
-    } else if (rightDistance > OBSTACLE_DISTANCE) {
-      // Turn right
-      Serial.println("Turning right");
-      turnRight();
-      delay(600);
+    if (leftDistance > OBSTACLE_DISTANCE) {
+      // Path is clear on left, continue
+      Serial.println("Left path clear");
     } else {
-      // Both sides blocked, reverse and turn
-      Serial.println("Reversing");
-      moveBackward();
-      delay(500);
-      stopMotors();
-      delay(200);
+      // Obstacle on left, turn right to check
+      Serial.println("Obstacle on left, turning right...");
       turnRight();
-      delay(700);
+      delay(1200); // Turn right (back to center + more)
+      stopMotors();
+      delay(300);
+      
+      long rightDistance = getDistance();
+      Serial.print("Right distance: ");
+      Serial.println(rightDistance);
+      
+      if (rightDistance <= OBSTACLE_DISTANCE) {
+        // Both sides blocked, reverse more
+        Serial.println("Both sides blocked, reversing more...");
+        moveBackward();
+        delay(700);
+        stopMotors();
+        delay(200);
+        // Turn right to try different direction
+        turnRight();
+        delay(700);
+      }
     }
     
     stopMotors();
